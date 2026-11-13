@@ -1,0 +1,7 @@
+{
+  "id": "pr-inbox",
+  "description": "Review board for open PRs and a Workspaces page that ties each Paseo workspace to its PR or stack, with review-plan agents",
+  "requirements": {
+    "paseo": ">=0.10.3"
+  }
+}
