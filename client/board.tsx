@@ -9,6 +9,7 @@ import { FOCUSES, FOCUS_LABELS, matchesFocus } from "./focus";
 import { missingItems, readyLabel } from "./missing";
 import { PromptsPanel } from "./prompts-panel";
 import { PullRequestRow } from "./row";
+import { VersionBadge } from "./version-badge";
 import { createStyles, type Styles } from "./styles";
 import { useBoardState } from "./useBoardState";
 import { useReviewAgent } from "./useReviewAgent";
@@ -76,6 +77,7 @@ export function BoardSurface({ theme, layout, navigation }: PluginSurfaceProps) 
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.title}>Review board</Text>
+        <VersionBadge styles={styles} />
         {board.error ? <Text style={styles.error}>{String(board.error)}</Text> : null}
         {reviewAgent.error ? <Text style={styles.error}>{reviewAgent.error}</Text> : null}
         {board.data ? (

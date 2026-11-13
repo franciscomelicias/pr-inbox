@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { CATEGORY_TITLES, classifyWorkspacesRpc, type Category } from "../../shared/workspaces";
+import { VersionBadge } from "../version-badge";
 import { createStyles, type Styles } from "../styles";
 import { PROVIDER, reviewPlanPrompt, stackReviewPlanPrompt } from "../useReviewAgent";
 import { useWorkspaces, type Workspace } from "./useWorkspaces";
@@ -68,6 +69,7 @@ export function WorkspacesSurface({ theme, layout, navigation }: PluginSurfacePr
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.title}>Workspaces</Text>
+        <VersionBadge styles={styles} />
         {classified.error ? <Text style={styles.error}>{String(classified.error)}</Text> : null}
         {archive.error ? <Text style={styles.error}>{String(archive.error)}</Text> : null}
         {reviewPlan.error ? <Text style={styles.error}>{String(reviewPlan.error)}</Text> : null}

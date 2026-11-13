@@ -36,4 +36,14 @@ npm run typecheck
 paseo plugin reload pr-inbox
 ```
 
+## Versions and releases
+
+- The version is `package.json`'s; `shared/version.ts` is generated from it by npm's `version` hook (don't edit it).
+- Both page headers show `vX.Y.Z` (opens the GitHub releases). When GitHub has a newer release it shows
+  `⬆ vA.B.C available` in yellow and an **Update** button: it runs `git pull --ff-only` in `~/paseo-plugins/pr-inbox`,
+  `npm install` when the lockfile changed, and reloads the plugin. Checked against GitHub at most every 6 hours.
+- To release, from a clean `main`: `npm run release -- patch|minor|major` (default patch). It runs typecheck,
+  bumps and commits the version, tags `vX.Y.Z`, pushes, creates the GitHub release with generated notes and reloads
+  the plugin.
+
 GitHub GraphQL is polled: the board build is cached (about 45 points per build), so keep nested connections small.
