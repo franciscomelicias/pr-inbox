@@ -34,7 +34,7 @@ Do not change code, push, or reply on GitHub until I approve the plan.`,
   ask: `I want to understand PR #{{number}} "{{title}}" by @{{author}} in {{repo}} before reviewing it.
 
 Read it without checking anything out: \`gh pr view {{number}} --repo {{repo}} --comments\` and \`gh pr diff {{number}} --repo {{repo}}\`.
-If the title, branch or description names a Jira ticket (RP-XXXX) and you can reach Jira, read the ticket for the "why".
+If the title, branch or description names a Linear ticket (ROG-XXXX) and you can reach Linear, read the ticket for the "why".
 Open files in this checkout only when you need surrounding code to explain something.
 
 Then answer briefly, in this order:
