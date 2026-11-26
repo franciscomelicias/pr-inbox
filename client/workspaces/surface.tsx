@@ -7,11 +7,12 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { CATEGORY_TITLES, classifyWorkspacesRpc, type Category } from "../../shared/workspaces";
 import { VersionBadge } from "../version-badge";
 import { createStyles, type Styles } from "../styles";
-import { PROVIDER, reviewPlanPrompt, stackReviewPlanPrompt } from "../useReviewAgent";
+import { PROVIDER, rebasePrompt, reviewPlanPrompt, stackReviewPlanPrompt } from "../useReviewAgent";
 import { useWorkspaces, type Workspace } from "./useWorkspaces";
 
 type Entry = RpcOutput<typeof classifyWorkspacesRpc>["workspaces"][number];
 type Layer = Entry["layers"][number];
+type PullRequest = NonNullable<Entry["pullRequest"]>;
 
 const SECTION_ORDER: Category[] = ["inProgress", "finished", "withComments", "reviewing", "merged"];
 const REFRESH_MS = 5 * 60 * 1000;
@@ -59,6 +60,26 @@ export function WorkspacesSurface({ theme, layout, navigation }: PluginSurfacePr
     },
   });
 
+  /** Sends the rebase to the workspace's most recent chat (or starts one) and opens it. */
+  const rebase = useMutation({
+    mutationFn: async ({ workspaceId, pullRequest }: { workspaceId: string; pullRequest: PullRequest }) => {
+      const prompt = rebasePrompt(pullRequest);
+      const { entries } = await paseo.agents.list();
+      const latest = entries
+        .map((entry) => entry.agent)
+        .filter((agent) => agent.workspaceId === workspaceId && !agent.archivedAt)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+      const agentId = latest
+        ? (await paseo.agents.ref(latest.id).send(prompt), latest.id)
+        : (
+            await paseo.workspaces
+              .ref(workspaceId)
+              .agents.create({ config: { provider: PROVIDER }, title: `Rebase PR #${pullRequest.number}`, prompt })
+          ).id;
+      navigation?.openAgent({ agentId });
+    },
+  });
+
   const byId = new Map((workspaces ?? []).map((workspace) => [workspace.id, workspace]));
   const entries = (classified.data?.workspaces ?? []).flatMap((entry) => {
     const workspace = byId.get(entry.id);
@@ -73,6 +94,7 @@ export function WorkspacesSurface({ theme, layout, navigation }: PluginSurfacePr
         {classified.error ? <Text style={styles.error}>{String(classified.error)}</Text> : null}
         {archive.error ? <Text style={styles.error}>{String(archive.error)}</Text> : null}
         {reviewPlan.error ? <Text style={styles.error}>{String(reviewPlan.error)}</Text> : null}
+        {rebase.error ? <Text style={styles.error}>{String(rebase.error)}</Text> : null}
         <Pressable
           accessibilityRole="button"
           disabled={classified.isFetching}
@@ -116,6 +138,8 @@ export function WorkspacesSurface({ theme, layout, navigation }: PluginSurfacePr
                 layers={row.layers}
                 reviewPlanPending={reviewPlan.isPending ? (reviewPlan.variables?.layers.map((layer) => layer.number) ?? null) : null}
                 onReviewPlan={navigation ? (layers) => reviewPlan.mutate({ workspaceId: row.id, layers }) : null}
+                rebasePending={rebase.isPending && rebase.variables?.workspaceId === row.id}
+                onRebase={navigation && row.pullRequest ? () => rebase.mutate({ workspaceId: row.id, pullRequest: row.pullRequest! }) : null}
                 tone={category === "withComments" ? "warning" : "normal"}
                 archiveLabel={category === "merged" ? (armed === row.id ? "Confirm archive" : "Archive") : null}
                 onArchive={() => (armed === row.id ? archive.mutate([row.id]) : setArmed(row.id))}
@@ -139,6 +163,8 @@ function WorkspaceRow({
   layers,
   reviewPlanPending,
   onReviewPlan,
+  rebasePending,
+  onRebase,
   tone,
   archiveLabel,
   onArchive,
@@ -147,12 +173,14 @@ function WorkspaceRow({
 }: {
   workspace: Workspace;
   branch: string | null;
-  pullRequest: { number: number; url: string; title: string } | null;
+  pullRequest: PullRequest | null;
   reasons: string[];
   stack: Entry["stack"];
   layers: Layer[];
   reviewPlanPending: number[] | null;
   onReviewPlan: ((layers: Layer[]) => void) | null;
+  rebasePending: boolean;
+  onRebase: (() => void) | null;
   tone: "warning" | "normal";
   archiveLabel: string | null;
   onArchive: () => void;
@@ -186,6 +214,12 @@ function WorkspaceRow({
           </Pressable>
         ) : null}
         {dirty ? <Text style={styles.badgeWarning}>uncommitted changes</Text> : null}
+        {pullRequest?.conflicts ? <Text style={styles.badgeDanger}>⚠ conflicts with {pullRequest.baseRefName}</Text> : null}
+        {pullRequest?.conflicts && onRebase ? (
+          <Pressable accessibilityRole="button" disabled={rebasePending} onPress={onRebase}>
+            <Text style={styles.agentButton}>{rebasePending ? "Sending…" : "Rebase"}</Text>
+          </Pressable>
+        ) : null}
       </View>
       {layers.map((layer) => (
         <View key={layer.number} style={[styles.layer, layer.isCurrent && layers.length > 1 ? styles.layerCurrent : null]}>

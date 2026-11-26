@@ -23,7 +23,17 @@ export const classifyWorkspacesRpc = defineRpc({
         id: z.string(),
         branch: z.string().nullable(),
         category: z.enum(CATEGORIES),
-        pullRequest: z.object({ number: z.number(), url: z.string(), title: z.string(), state: z.string() }).nullable(),
+        pullRequest: z
+          .object({
+            number: z.number(),
+            url: z.string(),
+            title: z.string(),
+            state: z.string(),
+            baseRefName: z.string(),
+            /** Open PR that GitHub can't merge into its base without a rebase. */
+            conflicts: z.boolean(),
+          })
+          .nullable(),
         reasons: z.array(z.string()),
         /** Position in the stack this workspace's PR sits in; null when not stacked. */
         stack: z.object({ position: z.number(), size: z.number() }).nullable(),

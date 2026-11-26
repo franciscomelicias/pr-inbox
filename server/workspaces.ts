@@ -39,7 +39,7 @@ export async function classifyWorkspaces({ workspaces }: { workspaces: Workspace
         id: workspace.id,
         branch: workspace.branch,
         category,
-        pullRequest: pr,
+        pullRequest: pr ? { ...pr, conflicts: pr.state === "OPEN" && pr.mergeable === "CONFLICTING" } : null,
         reasons,
         stack: row?.stack ? { position: row.stack.position, size: row.stack.size } : null,
         layers,

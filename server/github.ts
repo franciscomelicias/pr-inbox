@@ -186,6 +186,9 @@ export interface BranchPullRequest {
   url: string;
   title: string;
   state: "OPEN" | "MERGED" | "CLOSED";
+  baseRefName: string;
+  /** UNKNOWN while GitHub is still computing it. */
+  mergeable: "MERGEABLE" | "CONFLICTING" | "UNKNOWN";
 }
 
 /** The most recent PR opened from each branch, whatever its state. */
@@ -195,7 +198,7 @@ export async function fetchPullRequestsByBranch(branches: string[]): Promise<Map
     const fields = batch
       .map(
         (branch, index) =>
-          `b${index}: pullRequests(headRefName: ${JSON.stringify(branch)}, first: 1, states: [OPEN, MERGED, CLOSED], orderBy: { field: CREATED_AT, direction: DESC }) { nodes { number url title state } }`,
+          `b${index}: pullRequests(headRefName: ${JSON.stringify(branch)}, first: 1, states: [OPEN, MERGED, CLOSED], orderBy: { field: CREATED_AT, direction: DESC }) { nodes { number url title state baseRefName mergeable } }`,
       )
       .join("\n");
     const data: { repository: Record<string, { nodes: BranchPullRequest[] }> } = await graphql(

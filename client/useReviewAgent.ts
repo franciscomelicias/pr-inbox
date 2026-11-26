@@ -173,3 +173,13 @@ failing checks. Then present one plan, grouped by PR.
 Do not change code, push, or reply on GitHub until I approve the plan. A fix on a lower PR means rebasing the
 layers above it (\`gh stack rebase\`) before pushing.`;
 }
+
+export function rebasePrompt(pr: { number: number; title: string; baseRefName: string }): string {
+  return `My PR #${pr.number} "${pr.title}" has merge conflicts with \`${pr.baseRefName}\`. Rebase it.
+If this worktree is not on the PR's head branch, check that branch out first; if it is part of a gh-stack, use the /gh-stack skill to rebase the stack instead.
+
+1. \`git fetch origin\`, then rebase onto \`origin/${pr.baseRefName}\`.
+2. Resolve each conflict keeping both sides' intent; stop and ask me when the right resolution is unclear.
+3. Run the checks for the files you touched.
+4. Show me what you resolved, and push with \`--force-with-lease\` only after I say go.`;
+}
