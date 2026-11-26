@@ -1,5 +1,6 @@
 import type { PluginClientContext } from "@getpaseo/plugin/client";
 import { BoardSurface } from "./client/board";
+import { WorkspacesSidebarItem } from "./client/workspaces/sidebar-item";
 import { WorkspacesSurface } from "./client/workspaces/surface";
 
 export default function contribute(client: PluginClientContext) {
@@ -11,11 +12,6 @@ export default function contribute(client: PluginClientContext) {
     surface: "review-board",
   });
   client.addSurface("workspaces", WorkspacesSurface);
-  client.addSidebarItem({
-    id: "workspaces",
-    title: "Workspaces",
-    icon: "LayoutList",
-    surface: "workspaces",
-  });
+  client.addSidebarHeaderItem({ id: "workspaces", title: "Workspaces", Component: WorkspacesSidebarItem });
   return () => {};
 }

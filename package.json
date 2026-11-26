@@ -18,7 +18,7 @@
     "version": "node -p \"'export const VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > shared/version.ts && git add shared/version.ts"
   },
   "devDependencies": {
-    "@getpaseo/plugin": "0.10.3",
+    "@getpaseo/plugin": "0.17.3",
     "@tanstack/react-query": "^5.90.11",
     "@types/node": "^22.20.5",
     "@types/react": "~19.2.0",

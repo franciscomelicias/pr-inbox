@@ -75,3 +75,11 @@ export async function setBoardState(state: BoardState): Promise<Record<string, n
   await writeJson(STATE_FILE, state);
   return {};
 }
+
+// Matches the sidebar poll, so each poll rebuilds at most one board (~45 GraphQL points).
+const COMMENTS_MAX_AGE_MS = 15 * 60 * 1000;
+
+export async function commentsToAnswer(): Promise<{ count: number }> {
+  const board = await getRecentBoard(COMMENTS_MAX_AGE_MS);
+  return { count: board.rows.reduce((sum, row) => sum + (row.section === "mine" ? row.threadsToAnswer : 0), 0) };
+}

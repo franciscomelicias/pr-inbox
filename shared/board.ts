@@ -125,3 +125,10 @@ export const setStateRpc = defineRpc({
   input: boardStateSchema,
   output: z.object({}),
 });
+
+/** Review threads waiting on my answer across my open PRs; drives the sidebar count. */
+export const commentsToAnswerRpc = defineRpc({
+  name: "board.comments-to-answer",
+  input: z.object({}),
+  output: z.object({ count: z.number() }),
+});
